@@ -43,6 +43,7 @@ export default () => ({
   },
   plugins: [
     new HtmlWebpackPlugin({
+      filename: 'index.ejs',
       template: './src/index.html',
     }),
   ],

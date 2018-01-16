@@ -1,6 +1,10 @@
 {
   "name": "rss-reader-utility",
   "version": "0.0.1",
+  "main": "index.js",
+  "engines": {
+    "node": "9.3.0"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/maximjs/project-lvl3-s210"
@@ -28,10 +32,12 @@
     "babel-node": "babel-node",
     "eslint": "eslint src/",
     "webpack": "webpack",
-    "start": "webpack"
+    "start": "npm run babel-node -- index.js"
   },
   "dependencies": {
     "bootstrap": "^4.0.0-beta.3",
+    "ejs": "^2.5.7",
+    "express": "^4.16.2",
     "jquery": "^3.2.1",
     "popper.js": "^1.12.9"
   }
