@@ -1,0 +1,38 @@
+{
+  "name": "rss-reader-utility",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/maximjs/project-lvl3-s210"
+  },
+  "author": "Maxim Kozlyakov",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-cli": "*",
+    "babel-core": "*",
+    "babel-eslint": "*",
+    "babel-jest": "*",
+    "babel-loader": "*",
+    "babel-plugin-syntax-dynamic-import": "*",
+    "babel-preset-env": "*",
+    "babel-preset-stage-0": "*",
+    "css-loader": "^0.28.8",
+    "eslint": "*",
+    "eslint-config-airbnb-base": "*",
+    "eslint-plugin-import": "*",
+    "html-webpack-plugin": "^2.30.1",
+    "style-loader": "^0.19.1",
+    "webpack": "^3.10.0"
+  },
+  "scripts": {
+    "babel-node": "babel-node",
+    "eslint": "eslint src/",
+    "webpack": "webpack",
+    "start": "webpack"
+  },
+  "dependencies": {
+    "bootstrap": "^4.0.0-beta.3",
+    "jquery": "^3.2.1",
+    "popper.js": "^1.12.9"
+  }
+}
