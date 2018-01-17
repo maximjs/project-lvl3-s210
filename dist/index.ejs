@@ -5,13 +5,20 @@
     <title>rss reader</title>
   </head>
   <body>
-    <div class="jumbotron">
-      <form>
-        <div class="form-group">
-          <input type="text" class="form-control" placeholder="RSS-feed">
-        </div>
-        <button type="submit" class="btn btn-primary">Add</button>
-      </form>
+    <div class="container">
+      <div class="jumbotron">
+        <form id ="rss-form">
+          <div class="form-group">
+            <input type="text" required class="form-control" placeholder="RSS-feed">
+            <div class="invalid-feedback">
+              Please enter correct URL.
+            </div>
+            <small class="form-text text-muted">For example: https://www.vedomosti.ru/rss/news</small>
+          </div>
+          <button type="submit" class="btn btn-primary">Add</button>
+        </form>
+        <h5 class="my-3">Feeds:</h5>
+      </div>
     </div>
   <script type="text/javascript" src="bundle.js"></script></body>
 </html>

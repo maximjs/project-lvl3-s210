@@ -2,5 +2,6 @@
 *.log
 flow-typed
 .tern-port
-coverage/
+coverage
 assets
+dist
