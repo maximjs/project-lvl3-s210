@@ -28,6 +28,7 @@
     "webpack": "^3.10.0"
   },
   "scripts": {
+    "postinstall": "npm run webpack",
     "babel-node": "babel-node",
     "eslint": "eslint src/",
     "webpack": "webpack",
