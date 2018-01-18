@@ -11244,9 +11244,9 @@ module.exports = exports['default'];
 "use strict";
 
 
-__webpack_require__(12);
-
 __webpack_require__(3);
+
+__webpack_require__(12);
 
 __webpack_require__(15);
 
@@ -18236,12 +18236,38 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
-var rssReader = function rssReader() {
-  var form = document.querySelector('#rss-form');
-  var input = form.querySelector('input');
-  var state = { input: '', isValidInput: null };
+var state = { input: '', isValidInput: null, dataFeed: [] };
 
-  input.addEventListener('keyup', function () {
+var getDataFeed = function getDataFeed(channelArr) {
+  return channelArr.map(function (item) {
+    var title = item.querySelector('title').textContent;
+    var link = item.querySelector('guid').textContent;
+    var description = item.querySelector('description').textContent;
+    return { title: title, link: link, description: description };
+  });
+};
+
+var handlerATag = function handlerATag(event) {
+  event.preventDefault();
+  if (event.target.tagName === 'A') {
+    var href = event.target.href;
+
+    var dataItem = state.dataFeed.find(function (el) {
+      return el.link === href;
+    });
+    var description = dataItem.description;
+
+    var modal = document.body.querySelector('#modalItem');
+    var h5 = modal.querySelector('h5');
+    h5.innerHTML = description;
+    var a = modal.querySelector('a');
+    a.href = href;
+    a.textContent = href;
+  }
+};
+
+var handlerInput = function handlerInput(input) {
+  return function () {
     state.input = String(input.value);
     state.isValidInput = (0, _isURL2.default)(state.input);
     if (!state.input) {
@@ -18253,12 +18279,15 @@ var rssReader = function rssReader() {
       input.classList.remove('is-valid');
       input.classList.add('is-invalid');
     }
-  });
+  };
+};
 
-  form.addEventListener('submit', function (event) {
+var handlerForm = function handlerForm(input) {
+  return function (event) {
     event.preventDefault();
-    input.classList.remove('is-valid', 'is-invalid');
-    input.value = '';
+    var inputForm = input;
+    inputForm.classList.remove('is-valid', 'is-invalid');
+    inputForm.value = '';
     if (!document.querySelector('table')) {
       var table = document.createElement('table');
       table.className = 'table-bordered';
@@ -18269,7 +18298,6 @@ var rssReader = function rssReader() {
       divTable.appendChild(table);
       divJumb.appendChild(divTable);
     }
-
     _axios2.default.get(state.input).then(function (resp) {
       var parser = new DOMParser();
       var doc = parser.parseFromString(resp.data, 'text/html');
@@ -18277,42 +18305,56 @@ var rssReader = function rssReader() {
       if (!channel) {
         throw new Error('This is not the rss feed');
       }
-      var title = channel.querySelector('title');
-      var description = channel.querySelector('description');
+      var titleFeed = channel.querySelector('title');
+      var descrFeed = channel.querySelector('description');
       var table = document.querySelector('#feeds');
       var row = table.insertRow();
       var cellTitle = row.insertCell();
       cellTitle.className = 'p-1';
-      cellTitle.innerHTML = title.innerHTML;
-      if (description.childNodes.length === 1) {
+      cellTitle.innerHTML = titleFeed.innerHTML;
+      if (descrFeed.childNodes.length === 1) {
         var cellDescr = row.insertCell();
         cellDescr.className = 'p-1';
-        cellDescr.innerHTML = description.innerHTML;
+        cellDescr.innerHTML = descrFeed.innerHTML;
       }
       var container = document.querySelector('.container');
       var itemsTable = document.createElement('table');
+      itemsTable.addEventListener('click', handlerATag);
       itemsTable.className = 'ml-3 table-striped';
       container.appendChild(itemsTable);
-      var itemsArr = [].concat(_toConsumableArray(channel.querySelectorAll('item')));
-      itemsArr.forEach(function (item) {
-        var itemTitle = item.querySelector('title').textContent;
-        var itemLink = item.querySelector('guid').textContent;
+      var channelArr = [].concat(_toConsumableArray(channel.querySelectorAll('item')));
+      var dataFeed = getDataFeed(channelArr);
+      state.dataFeed = [].concat(_toConsumableArray(state.dataFeed), _toConsumableArray(dataFeed));
+      dataFeed.forEach(function (item) {
+        var title = item.title,
+            link = item.link;
+
         var a = document.createElement('a');
-        a.textContent = itemTitle;
-        a.href = itemLink;
+        a.setAttribute('data-toggle', 'modal');
+        a.setAttribute('data-target', '#modalItem');
+        a.textContent = title;
+        a.href = link;
         var itemRow = itemsTable.insertRow();
         var itemCell = itemRow.insertCell();
         itemCell.appendChild(a);
       });
-      container.appendChild(document.createElement('br'));
+      container.appendChild(document.createElement('hr'));
     }).then(function () {
       state.input = '';
       state.isValidInput = null;
     }).catch(function (error) {
       return console.error(new Error(state.input + ' ' + error.message));
     });
-  });
+  };
 };
+
+var rssReader = function rssReader() {
+  var form = document.querySelector('#rss-form');
+  var input = form.querySelector('input');
+  input.addEventListener('keyup', handlerInput(input));
+  form.addEventListener('submit', handlerForm(input));
+};
+
 rssReader();
 
 /***/ }),
