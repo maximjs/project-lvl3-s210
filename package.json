@@ -24,8 +24,7 @@
     "eslint-config-airbnb-base": "*",
     "eslint-plugin-import": "*",
     "html-webpack-plugin": "^2.30.1",
-    "style-loader": "^0.19.1",
-    "webpack": "^3.10.0"
+    "style-loader": "^0.19.1"
   },
   "scripts": {
     "postinstall": "npm run webpack",
@@ -43,6 +42,7 @@
     "express": "^4.16.2",
     "jquery": "^3.2.1",
     "popper.js": "^1.12.9",
-    "validator": "^9.2.0"
+    "validator": "^9.2.0",
+    "webpack": "^3.10.0"
   }
 }
