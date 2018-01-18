@@ -33,7 +33,7 @@
     "webpack": "webpack",
     "watch": "webpack --watch",
     "run": "npm run babel-node -- src/rss-reader.js",
-    "build": "set NODE_ENV=production && babel src/server.js --out-file dist/server.js --source-maps inline"
+    "build": "set NODE_ENV=production && babel src/server.js --out-file server.js --source-maps inline"
   },
   "dependencies": {
     "axios": "^0.17.1",

@@ -3,11 +3,13 @@ import path from 'path';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 
 export default () => ({
-  entry: './src/index.js',
+  entry: {
+    bundle: './src/index.js',
+  },
   output: {
     library: 'WebpackPackage',
     path: path.join(__dirname, 'dist'),
-    filename: 'bundle.js',
+    filename: '[name].js',
   },
   module: {
     rules: [

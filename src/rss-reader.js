@@ -5,9 +5,12 @@ const state = { input: '', isValidInput: null, dataFeed: [] };
 
 const getDataFeed = channelArr =>
   channelArr.map((item) => {
-    const title = item.querySelector('title').textContent;
-    const link = item.querySelector('guid').textContent;
-    const description = item.querySelector('description').textContent;
+    const itemTitle = item.querySelector('title');
+    const itemLink = item.querySelector('link').nextSibling;
+    const itemDescription = item.querySelector('description');
+    const title = itemTitle ? itemTitle.textContent : 'No title';
+    const link = itemLink ? itemLink.textContent.trim() : 'No link';
+    const description = itemDescription ? itemDescription.textContent : 'No description';
     return { title, link, description };
   });
 
@@ -59,6 +62,9 @@ const handlerForm = input => (event) => {
     .then((resp) => {
       const parser = new DOMParser();
       const doc = parser.parseFromString(resp.data, 'text/html');
+      return doc;
+    })
+    .then((doc) => {
       const channel = doc.querySelector('channel');
       if (!channel) {
         throw new Error('This is not the rss feed');
@@ -70,11 +76,10 @@ const handlerForm = input => (event) => {
       const cellTitle = row.insertCell();
       cellTitle.className = 'p-1';
       cellTitle.innerHTML = titleFeed.innerHTML;
-      if (descrFeed.childNodes.length === 1) {
-        const cellDescr = row.insertCell();
-        cellDescr.className = 'p-1';
-        cellDescr.innerHTML = descrFeed.innerHTML;
-      }
+      const cellDescr = row.insertCell();
+      cellDescr.className = 'p-1';
+      cellDescr.innerHTML = descrFeed.childNodes.length === 1 ? descrFeed.innerHTML : 'No description';
+
       const container = document.querySelector('.container');
       const itemsTable = document.createElement('table');
       itemsTable.addEventListener('click', handlerATag);
@@ -95,8 +100,6 @@ const handlerForm = input => (event) => {
         itemCell.appendChild(a);
       });
       container.appendChild(document.createElement('hr'));
-    })
-    .then(() => {
       state.input = '';
       state.isValidInput = null;
     })
@@ -110,4 +113,4 @@ const rssReader = () => {
   form.addEventListener('submit', handlerForm(input));
 };
 
-rssReader();
+export default rssReader;

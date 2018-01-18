@@ -1,4 +1,6 @@
 import 'jquery';
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import './rss-reader';
+import rssReader from './rss-reader';
+
+rssReader();
