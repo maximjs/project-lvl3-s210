@@ -1,7 +1,14 @@
 import axios from 'axios';
 import isURL from 'validator/lib/isURL';
 
-const state = { input: '', isValidInput: null, dataFeed: [] };
+const state = {
+  input: '',
+  isValidInput: null,
+  dataFeed: [],
+};
+
+const container = document.querySelector('.container');
+const divJumb = document.querySelector('.jumbotron');
 
 const getDataFeed = channelArr =>
   channelArr.map((item) => {
@@ -14,20 +21,14 @@ const getDataFeed = channelArr =>
     return { title, link, description };
   });
 
-const handlerATag = (event) => {
-  event.preventDefault();
-  if (event.target.tagName === 'A') {
-    const { href } = event.target;
-    const dataItem = state.dataFeed.find(el => el.link === href);
-    const { description } = dataItem;
-    const modal = document.body.querySelector('#modalItem');
-    const h5 = modal.querySelector('h5');
-    h5.innerHTML = description;
-    const a = modal.querySelector('a');
-    a.href = href;
-    a.textContent = href;
-  }
-};
+const findItem = href =>
+  state.dataFeed.reduce((acc, feed) => {
+    const item = feed.data.find(el => el.link === href);
+    if (!item) {
+      return acc;
+    }
+    return item;
+  }, {});
 
 const handlerInput = input => () => {
   state.input = String(input.value);
@@ -43,20 +44,84 @@ const handlerInput = input => () => {
   }
 };
 
+const createFeedsTable = () => {
+  const table = document.createElement('table');
+  table.className = 'table-bordered';
+  table.id = 'feedsTable';
+  const divTable = document.createElement('div');
+  divTable.className = 'my-3';
+  divTable.appendChild(table);
+  divJumb.appendChild(divTable);
+};
+
+const modalItem = `
+<div class="modal fade" id="modalItem" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+    <div class="modal-body">
+      <h5></h5>
+      <a></a>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" type="button" data-dismiss="modal">Close</button>
+    </div>
+    </div>
+  </div>
+</div>
+`;
+
+const handlerATag = (event) => {
+  event.preventDefault();
+  const { href } = event.target;
+  const dataItem = findItem(href);
+  const { description } = dataItem;
+  if (!divJumb.querySelector('#modalItem')) {
+    const divModal = document.createElement('div');
+    divModal.innerHTML = modalItem;
+    const modal = divModal.children[0];
+    divJumb.appendChild(modal);
+  }
+  const modal = divJumb.querySelector('#modalItem');
+  const h5 = modal.querySelector('h5');
+  h5.innerHTML = description;
+  const aModalTag = modal.querySelector('a');
+  aModalTag.href = href;
+  aModalTag.textContent = href;
+};
+
+const createItemsTable = () => {
+  const itemsTable = document.createElement('table');
+  itemsTable.className = 'ml-3 table-striped';
+  itemsTable.id = 'itemsTable';
+  container.appendChild(itemsTable);
+  return itemsTable;
+};
+
+const displayItemsTable = (dataFeed) => {
+  const itemsTable = createItemsTable();
+  dataFeed.forEach((item) => {
+    const { title, link } = item;
+    const aTag = document.createElement('a');
+    aTag.addEventListener('click', handlerATag);
+    aTag.setAttribute('data-toggle', 'modal');
+    aTag.setAttribute('data-target', '#modalItem');
+    aTag.textContent = title;
+    aTag.href = link;
+    const itemRow = itemsTable.insertRow();
+    const itemCell = itemRow.insertCell();
+    itemCell.appendChild(aTag);
+  });
+};
+
+const getDescription = descrNode => (descrNode.childNodes.length === 1 ? descrNode.innerHTML : 'No description');
+
 const handlerForm = input => (event) => {
   event.preventDefault();
   const inputForm = input;
   inputForm.classList.remove('is-valid', 'is-invalid');
   inputForm.value = '';
-  if (!document.querySelector('table')) {
-    const table = document.createElement('table');
-    table.className = 'table-bordered';
-    table.id = 'feeds';
-    const divJumb = document.querySelector('.jumbotron');
-    const divTable = document.createElement('div');
-    divTable.className = 'my-3';
-    divTable.appendChild(table);
-    divJumb.appendChild(divTable);
+  if (!document.querySelector('#feedsTable')) {
+    createFeedsTable();
   }
   axios.get(state.input)
     .then((resp) => {
@@ -69,36 +134,33 @@ const handlerForm = input => (event) => {
       if (!channel) {
         throw new Error('This is not the rss feed');
       }
+      const feedObj = {
+        feed: {
+          title: '',
+          link: '',
+          description: '',
+        },
+        data: [],
+      };
+      feedObj.feed.link = state.input;
       const titleFeed = channel.querySelector('title');
+      feedObj.feed.title = titleFeed.innerHTML;
       const descrFeed = channel.querySelector('description');
-      const table = document.querySelector('#feeds');
+      feedObj.feed.description = getDescription(descrFeed);
+      const table = document.querySelector('#feedsTable');
       const row = table.insertRow();
       const cellTitle = row.insertCell();
       cellTitle.className = 'p-1';
       cellTitle.innerHTML = titleFeed.innerHTML;
       const cellDescr = row.insertCell();
       cellDescr.className = 'p-1';
-      cellDescr.innerHTML = descrFeed.childNodes.length === 1 ? descrFeed.innerHTML : 'No description';
+      cellDescr.innerHTML = getDescription(descrFeed);
 
-      const container = document.querySelector('.container');
-      const itemsTable = document.createElement('table');
-      itemsTable.addEventListener('click', handlerATag);
-      itemsTable.className = 'ml-3 table-striped';
-      container.appendChild(itemsTable);
       const channelArr = [...channel.querySelectorAll('item')];
       const dataFeed = getDataFeed(channelArr);
-      state.dataFeed = [...state.dataFeed, ...dataFeed];
-      dataFeed.forEach((item) => {
-        const { title, link } = item;
-        const a = document.createElement('a');
-        a.setAttribute('data-toggle', 'modal');
-        a.setAttribute('data-target', '#modalItem');
-        a.textContent = title;
-        a.href = link;
-        const itemRow = itemsTable.insertRow();
-        const itemCell = itemRow.insertCell();
-        itemCell.appendChild(a);
-      });
+      feedObj.data = [...dataFeed];
+      state.dataFeed = [...state.dataFeed, feedObj];
+      displayItemsTable(dataFeed);
       container.appendChild(document.createElement('hr'));
       state.input = '';
       state.isValidInput = null;
@@ -106,11 +168,24 @@ const handlerForm = input => (event) => {
     .catch(error => console.error(new Error(`${state.input} ${error.message}`)));
 };
 
+const handlerNavbar = (aTag, input) => (event) => {
+  event.preventDefault();
+  const inputForm = input;
+  inputForm.value = aTag.href;
+  state.input = inputForm.value;
+};
+
 const rssReader = () => {
   const form = document.querySelector('#rss-form');
   const input = form.querySelector('input');
   input.addEventListener('keyup', handlerInput(input));
   form.addEventListener('submit', handlerForm(input));
+  const navbar = document.querySelector('.navbar');
+  const liArr = [...navbar.querySelectorAll('li')];
+  liArr.forEach((li) => {
+    const aTag = li.querySelector('a');
+    aTag.addEventListener('click', handlerNavbar(aTag, input));
+  });
 };
 
 export default rssReader;

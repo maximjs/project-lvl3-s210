@@ -7,6 +7,27 @@
   <body>
     <div class="container">
       <div class="jumbotron">
+        <nav class="navbar navbar-expand-sm navbar-light bg-faded">
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#nav-content" aria-controls="nav-content" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <!-- Brand -->
+          <span class="navbar-brand">RSS reader</span>
+          <!-- Links -->
+          <div class="collapse navbar-collapse" id="nav-content">
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a class="nav-link" href="https://www.vedomosti.ru/rss/news">vedomosti</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="http://rss.nytimes.com/services/xml/rss/nyt/Americas.xml">nytimes</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="http://www.newyorker.com/feed/news">newyorker</a>
+              </li>
+            </ul>
+          </div>
+        </nav>
         <form id ="rss-form">
           <div class="form-group">
             <input type="text" required class="form-control" placeholder="RSS-feed">
@@ -18,19 +39,6 @@
           <button type="submit" class="btn btn-primary">Add</button>
         </form>
         <h5 class="my-3">Feeds:</h5>
-      </div>
-    </div>
-    <div class="modal fade" id="modalItem" tabindex="-1" role="dialog">
-         <div class="modal-dialog">
-           <div class="modal-content">
-            <div class="modal-body">
-              <h5></h5>
-              <a></a>
-            </div>
-           <div class="modal-footer">
-             <button class="btn btn-default" type="button" data-dismiss="modal">Close</button>
-           </div>
-        </div>
       </div>
     </div>
   </body>
