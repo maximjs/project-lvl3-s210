@@ -123,7 +123,7 @@ const handlerForm = input => (event) => {
   if (!document.querySelector('#feedsTable')) {
     createFeedsTable();
   }
-  axios.get(state.input)
+  axios.get(state.input, { withCredentials: true })
     .then((resp) => {
       const parser = new DOMParser();
       const doc = parser.parseFromString(resp.data, 'text/html');
