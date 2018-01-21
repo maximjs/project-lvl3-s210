@@ -1,10 +1,10 @@
 import axios from 'axios';
 import isURL from 'validator/lib/isURL';
-import url from 'url';
 
 const state = {
   input: '',
   isValidInput: null,
+  tableIdCounter: 0,
   dataFeed: [],
 };
 
@@ -70,8 +70,9 @@ const handlerATag = (event) => {
 
 const createItemsTable = () => {
   const itemsTable = document.createElement('table');
+  itemsTable.setAttribute('data-uid', '#modalItem');
   itemsTable.className = 'ml-3 table-striped';
-  itemsTable.id = 'itemsTable';
+  itemsTable.id = `id${state.tableIdCounter}`;
   container.appendChild(itemsTable);
   return itemsTable;
 };
@@ -115,11 +116,11 @@ const handlerForm = input => (event) => {
     })
     .then((doc) => {
       const channel = doc.querySelector('channel');
-      console.log(channel);
       if (!channel) {
         throw new Error('This is not the rss feed');
       }
       const feedObj = {
+        tableId: '',
         feed: {
           title: '',
           link: '',
@@ -127,6 +128,7 @@ const handlerForm = input => (event) => {
         },
         data: [],
       };
+      feedObj.tableId = `id${state.tableIdCounter}`;
       feedObj.feed.link = state.input;
       const titleFeed = channel.querySelector('title');
       feedObj.feed.title = titleFeed.innerHTML;
@@ -140,6 +142,7 @@ const handlerForm = input => (event) => {
       const cellDescr = row.insertCell();
       cellDescr.className = 'p-1';
       cellDescr.innerHTML = getDescription(descrFeed);
+
       const channelArr = [...channel.querySelectorAll('item')];
       const dataFeed = getDataFeed(channelArr);
       feedObj.data = dataFeed;
@@ -148,6 +151,7 @@ const handlerForm = input => (event) => {
       container.appendChild(document.createElement('hr'));
       state.input = '';
       state.isValidInput = null;
+      state.tableIdCounter += 1;
     })
     .catch(error => console.error(new Error(`${state.input} ${error.message}`)));
 };
@@ -172,22 +176,23 @@ const updateDataFeed = diffDataFeed => state.dataFeed.forEach((el, index) => {
   feedEl.data = [...diffDataFeed[index].data, ...feedEl.data];
 });
 
-const getHost = (link) => {
-  const urlObj = url.parse(link);
-  if (!urlObj.host) {
-    return '';
-  }
-  const hostArr = urlObj.host.split('.');
-  if (hostArr.length === 3) {
-    return hostArr.slice(1).join('.');
-  }
-  return hostArr.join('.');
-};
+// const getHost = (link) => {
+//   const urlObj = url.parse(link);
+//   if (!urlObj.host) {
+//     return '';
+//   }
+//   const hostArr = urlObj.host.split('.');
+//   if (hostArr.length === 3) {
+//     return hostArr.slice(1).join('.');
+//   }
+//   return hostArr.join('.');
+// };
 
 const rssReader = () => {
   const form = document.querySelector('#rss-form');
   const input = form.querySelector('input');
-  input.addEventListener('keyup', handlerInput(input));
+  input.addEventListener('input', handlerInput(input));
+  input.addEventListener('paste', handlerInput(input));
   form.addEventListener('submit', handlerForm(input));
   const navbar = document.querySelector('.navbar');
   const liArr = [...navbar.querySelectorAll('li')];
@@ -214,14 +219,18 @@ const rssReader = () => {
           updateDataFeed(diffDataFeed);
           diffDataFeed.forEach((feedsEl) => {
             if (feedsEl.data.length !== 0) {
-              const hostFeed = getHost(feedsEl.feed.link);
-              const aAllTagsArr = [...document.querySelectorAll('a')];
-              const aFirstFeedTag = aAllTagsArr.find((aTag) => {
-                const host = getHost(aTag.href);
-                return host === hostFeed && aTag.parentElement.tagName === 'TD';
-              });
+              // const hostFeed = getHost(feedsEl.feed.link);
+              // const aAllTagsArr = [...document.querySelectorAll('a')];
+              // const aFirstFeedTag = aAllTagsArr.find((aTag) => {
+              //   const host = getHost(aTag.href);
+              //   return host === hostFeed && aTag.parentElement.tagName === 'TD';
+              // });
+              console.log(feedsEl);
+              const { tableId } = feedsEl;
               feedsEl.data.slice().reverse().forEach((feedElem) => {
-                const parentElTBody = aFirstFeedTag.closest('tbody');
+                const feedTable = document.querySelector(`#${tableId}`);
+                console.log(feedTable);
+                const parentElTBody = feedTable.querySelector('tbody');
                 const trTag = document.createElement('tr');
                 const tdTag = document.createElement('td');
                 const aTag = document.createElement('a');
