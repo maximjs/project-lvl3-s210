@@ -1,5 +1,6 @@
 import axios from 'axios';
 import isURL from 'validator/lib/isURL';
+import url from 'url';
 
 const state = {
   input: '',
@@ -54,33 +55,11 @@ const createFeedsTable = () => {
   divJumb.appendChild(divTable);
 };
 
-const modalItem = `
-<div class="modal fade" id="modalItem" tabindex="-1" role="dialog">
-  <div class="modal-dialog">
-    <div class="modal-content">
-    <div class="modal-body">
-      <h5></h5>
-      <a></a>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-default" type="button" data-dismiss="modal">Close</button>
-    </div>
-    </div>
-  </div>
-</div>
-`;
-
 const handlerATag = (event) => {
   event.preventDefault();
   const { href } = event.target;
   const dataItem = findItem(href);
   const { description } = dataItem;
-  if (!divJumb.querySelector('#modalItem')) {
-    const divModal = document.createElement('div');
-    divModal.innerHTML = modalItem;
-    const modal = divModal.children[0];
-    divJumb.appendChild(modal);
-  }
   const modal = divJumb.querySelector('#modalItem');
   const h5 = modal.querySelector('h5');
   h5.innerHTML = description;
@@ -115,6 +94,11 @@ const displayItemsTable = (dataFeed) => {
 
 const getDescription = descrNode => (descrNode.childNodes.length === 1 ? descrNode.innerHTML : 'No description');
 
+const getFeedsData = () => {
+  const dataPromiseArr = state.dataFeed.map(el => axios.get(`/api/rss?url=${el.feed.link}`));
+  return Promise.all(dataPromiseArr);
+};
+
 const handlerForm = input => (event) => {
   event.preventDefault();
   const inputForm = input;
@@ -123,7 +107,7 @@ const handlerForm = input => (event) => {
   if (!document.querySelector('#feedsTable')) {
     createFeedsTable();
   }
-  axios.get(state.input, { withCredentials: true })
+  axios.get(`/api/rss?url=${state.input}`)
     .then((resp) => {
       const parser = new DOMParser();
       const doc = parser.parseFromString(resp.data, 'text/html');
@@ -131,6 +115,7 @@ const handlerForm = input => (event) => {
     })
     .then((doc) => {
       const channel = doc.querySelector('channel');
+      console.log(channel);
       if (!channel) {
         throw new Error('This is not the rss feed');
       }
@@ -155,10 +140,9 @@ const handlerForm = input => (event) => {
       const cellDescr = row.insertCell();
       cellDescr.className = 'p-1';
       cellDescr.innerHTML = getDescription(descrFeed);
-
       const channelArr = [...channel.querySelectorAll('item')];
       const dataFeed = getDataFeed(channelArr);
-      feedObj.data = [...dataFeed];
+      feedObj.data = dataFeed;
       state.dataFeed = [...state.dataFeed, feedObj];
       displayItemsTable(dataFeed);
       container.appendChild(document.createElement('hr'));
@@ -175,6 +159,31 @@ const handlerNavbar = (aTag, input) => (event) => {
   state.input = inputForm.value;
 };
 
+const getDiffDataFeed = newDataFeed => state.dataFeed.map((elem, index) => {
+  const diff = newDataFeed[index].filter((elemNew) => {
+    const findIndex = elem.data.findIndex(elemOld => elemNew.link === elemOld.link);
+    return findIndex === -1;
+  });
+  return { ...elem, data: diff };
+});
+
+const updateDataFeed = diffDataFeed => state.dataFeed.forEach((el, index) => {
+  const feedEl = el;
+  feedEl.data = [...diffDataFeed[index].data, ...feedEl.data];
+});
+
+const getHost = (link) => {
+  const urlObj = url.parse(link);
+  if (!urlObj.host) {
+    return '';
+  }
+  const hostArr = urlObj.host.split('.');
+  if (hostArr.length === 3) {
+    return hostArr.slice(1).join('.');
+  }
+  return hostArr.join('.');
+};
+
 const rssReader = () => {
   const form = document.querySelector('#rss-form');
   const input = form.querySelector('input');
@@ -186,6 +195,51 @@ const rssReader = () => {
     const aTag = li.querySelector('a');
     aTag.addEventListener('click', handlerNavbar(aTag, input));
   });
+
+  setInterval(() => {
+    if (state.dataFeed.length !== 0) {
+      getFeedsData()
+        .then(resp => resp.map((el) => {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(el.data, 'text/html');
+          return doc;
+        }))
+        .then((data) => {
+          const newDataFeed = data.map((feed) => {
+            const channel = feed.querySelector('channel');
+            const channelArr = [...channel.querySelectorAll('item')];
+            return getDataFeed(channelArr);
+          });
+          const diffDataFeed = getDiffDataFeed(newDataFeed);
+          updateDataFeed(diffDataFeed);
+          diffDataFeed.forEach((feedsEl) => {
+            if (feedsEl.data.length !== 0) {
+              const hostFeed = getHost(feedsEl.feed.link);
+              const aAllTagsArr = [...document.querySelectorAll('a')];
+              const aFirstFeedTag = aAllTagsArr.find((aTag) => {
+                const host = getHost(aTag.href);
+                return host === hostFeed && aTag.parentElement.tagName === 'TD';
+              });
+              feedsEl.data.slice().reverse().forEach((feedElem) => {
+                const parentElTBody = aFirstFeedTag.closest('tbody');
+                const trTag = document.createElement('tr');
+                const tdTag = document.createElement('td');
+                const aTag = document.createElement('a');
+                aTag.addEventListener('click', handlerATag);
+                aTag.setAttribute('data-toggle', 'modal');
+                aTag.setAttribute('data-target', '#modalItem');
+                const { title, link } = feedElem;
+                aTag.textContent = title;
+                aTag.href = link;
+                trTag.appendChild(tdTag.appendChild(aTag));
+                parentElTBody.insertBefore(trTag, parentElTBody.firstChild);
+              });
+            }
+          });
+        })
+        .catch(error => console.error(error));
+    }
+  }, 5000);
 };
 
 export default rssReader;
