@@ -176,18 +176,6 @@ const updateDataFeed = diffDataFeed => state.dataFeed.forEach((el, index) => {
   feedEl.data = [...diffDataFeed[index].data, ...feedEl.data];
 });
 
-// const getHost = (link) => {
-//   const urlObj = url.parse(link);
-//   if (!urlObj.host) {
-//     return '';
-//   }
-//   const hostArr = urlObj.host.split('.');
-//   if (hostArr.length === 3) {
-//     return hostArr.slice(1).join('.');
-//   }
-//   return hostArr.join('.');
-// };
-
 const rssReader = () => {
   const form = document.querySelector('#rss-form');
   const input = form.querySelector('input');
@@ -219,17 +207,9 @@ const rssReader = () => {
           updateDataFeed(diffDataFeed);
           diffDataFeed.forEach((feedsEl) => {
             if (feedsEl.data.length !== 0) {
-              // const hostFeed = getHost(feedsEl.feed.link);
-              // const aAllTagsArr = [...document.querySelectorAll('a')];
-              // const aFirstFeedTag = aAllTagsArr.find((aTag) => {
-              //   const host = getHost(aTag.href);
-              //   return host === hostFeed && aTag.parentElement.tagName === 'TD';
-              // });
-              console.log(feedsEl);
               const { tableId } = feedsEl;
               feedsEl.data.slice().reverse().forEach((feedElem) => {
                 const feedTable = document.querySelector(`#${tableId}`);
-                console.log(feedTable);
                 const parentElTBody = feedTable.querySelector('tbody');
                 const trTag = document.createElement('tr');
                 const tdTag = document.createElement('td');
