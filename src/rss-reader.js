@@ -190,44 +190,46 @@ const rssReader = () => {
   });
 
   setInterval(() => {
-    if (state.dataFeed.length !== 0) {
-      getFeedsData()
-        .then(resp => resp.map((el) => {
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(el.data, 'text/html');
-          return doc;
-        }))
-        .then((data) => {
-          const newDataFeed = data.map((feed) => {
-            const channel = feed.querySelector('channel');
-            const channelArr = [...channel.querySelectorAll('item')];
-            return getDataFeed(channelArr);
-          });
-          const diffDataFeed = getDiffDataFeed(newDataFeed);
-          updateDataFeed(diffDataFeed);
-          diffDataFeed.forEach((feedsEl) => {
-            if (feedsEl.data.length !== 0) {
-              const { tableId } = feedsEl;
-              feedsEl.data.slice().reverse().forEach((feedElem) => {
-                const feedTable = document.querySelector(`#${tableId}`);
-                const parentElTBody = feedTable.querySelector('tbody');
-                const trTag = document.createElement('tr');
-                const tdTag = document.createElement('td');
-                const aTag = document.createElement('a');
-                aTag.addEventListener('click', handlerATag);
-                aTag.setAttribute('data-toggle', 'modal');
-                aTag.setAttribute('data-target', '#modalItem');
-                const { title, link } = feedElem;
-                aTag.textContent = title;
-                aTag.href = link;
-                trTag.appendChild(tdTag.appendChild(aTag));
-                parentElTBody.insertBefore(trTag, parentElTBody.firstChild);
-              });
-            }
-          });
-        })
-        .catch(error => console.error(error));
+    if (state.dataFeed.length === 0) {
+      return;
     }
+    getFeedsData()
+      .then(resp => resp.map((el) => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(el.data, 'text/html');
+        return doc;
+      }))
+      .then((data) => {
+        const newDataFeed = data.map((feed) => {
+          const channel = feed.querySelector('channel');
+          const channelArr = [...channel.querySelectorAll('item')];
+          return getDataFeed(channelArr);
+        });
+        const diffDataFeed = getDiffDataFeed(newDataFeed);
+        updateDataFeed(diffDataFeed);
+        diffDataFeed.forEach((feedsEl) => {
+          if (feedsEl.data.length === 0) {
+            return;
+          }
+          const { tableId } = feedsEl;
+          feedsEl.data.slice().reverse().forEach((feedElem) => {
+            const feedTable = document.querySelector(`#${tableId}`);
+            const parentElTBody = feedTable.querySelector('tbody');
+            const trTag = document.createElement('tr');
+            const tdTag = document.createElement('td');
+            const aTag = document.createElement('a');
+            aTag.addEventListener('click', handlerATag);
+            aTag.setAttribute('data-toggle', 'modal');
+            aTag.setAttribute('data-target', '#modalItem');
+            const { title, link } = feedElem;
+            aTag.textContent = title;
+            aTag.href = link;
+            trTag.appendChild(tdTag.appendChild(aTag));
+            parentElTBody.insertBefore(trTag, parentElTBody.firstChild);
+          });
+        });
+      })
+      .catch(error => console.error(error));
   }, 5000);
 };
 
