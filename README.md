@@ -12,4 +12,4 @@
 * Деплой (Heroku)
 
 RSS Reader:  
-https://enigmatic-beach-76203.herokuapp.com/
+https://enigmatic-beach-76203.herokuapp.com/ (подождите 20-40 сек, пока стартует dyno)
